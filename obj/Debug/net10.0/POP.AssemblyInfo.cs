@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("POP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc5521e2dbb11b3735b9700bf5cde4fda56cfe02")]
 [assembly: System.Reflection.AssemblyProductAttribute("POP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("POP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

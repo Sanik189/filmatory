@@ -1,11 +1,13 @@
-﻿@page "/"
+@page "/"
+@rendermode InteractiveServer
 @implements IDisposable
 @inject MovieLibraryState Library
+@inject LocalizationState Loc
 
-<PageTitle>POP Movies</PageTitle>
+<PageTitle>Filmatory</PageTitle>
 
 @{
-    var filteredMovies = Library.FilteredMovies;
+    var catalogMovies = Library.CatalogMovies;
     var recommendations = Library.Recommendations;
     var selectedMovie = Library.SelectedMovie;
     var recentMovies = Library.RecentMovies;
@@ -13,64 +15,69 @@
 
 <section class="hero-card panel">
     <div class="hero-copy">
-        <span class="eyebrow">Сайт для открытия фильмов, а не для просмотра</span>
-        <h2>Название, описание, умный поиск и рекомендации, которые меняются от ваших последних просмотров.</h2>
-        <p>
-            Выбирайте несколько жанров одновременно, открывайте карточки фильмов и ставьте оценки —
-            Blazor-сервис запоминает последние действия прямо в сессии и перестраивает выдачу без базы данных.
-        </p>
+        <span class="eyebrow">@Loc.T("hero.eyebrow")</span>
+        <h2>@Loc.T("hero.title")</h2>
+        <p>@Loc.T("hero.subtitle")</p>
 
         <div class="hero-stats">
             <article>
-                <strong>@Library.TotalMovies</strong>
-                <span>фильмов в каталоге</span>
+                <strong>@Library.TotalResults.ToString("N0")</strong>
+                <span>@Loc.T("hero.stat.movies")</span>
             </article>
             <article>
                 <strong>@Library.AvailableGenres.Count</strong>
-                <span>жанров в умном поиске</span>
+                <span>@Loc.T("hero.stat.genres")</span>
             </article>
             <article>
                 <strong>@Library.TotalRatings</strong>
-                <span>оценок уже учитывается</span>
+                <span>@Loc.T("hero.stat.ratings")</span>
             </article>
         </div>
     </div>
 
     <div class="hero-side">
         <div class="floating-card">
-            <span>Персонализация</span>
-            <h3>@(selectedMovie?.Title ?? recommendations.FirstOrDefault()?.Movie.Title ?? "Neon Harbor")</h3>
+            <span>@Loc.T("hero.personalization")</span>
+            <h3>@(selectedMovie?.Title ?? recommendations.FirstOrDefault()?.Movie.Title ?? Loc.T("hero.nextMovie"))</h3>
             <p>
                 @(selectedMovie is null
-                    ? "Откройте любую карточку, чтобы закрепить последний просмотр и увидеть точнее подобранные рекомендации."
+                    ? Loc.T("hero.openHint")
                     : Library.DescribeRecommendation(selectedMovie))
             </p>
         </div>
     </div>
 </section>
 
+@if (Library.ErrorMessage is not null)
+{
+    <section class="panel error-banner">
+        <strong>@Loc.T("error.title")</strong>
+        <p>@Library.ErrorMessage</p>
+    </section>
+}
+
 <section id="search" class="panel controls-panel">
     <div class="controls-top">
         <div>
-            <span class="section-label">Smart search</span>
-            <h3>Выбор сразу нескольких жанров</h3>
+            <span class="section-label">@Loc.T("search.label")</span>
+            <h3>@Loc.T("search.heading")</h3>
         </div>
 
-        <button type="button" class="clear-button" @onclick="Library.ClearFilters">Сбросить фильтры</button>
+        <button type="button" class="clear-button" @onclick="Library.ClearFilters">@Loc.T("search.clear")</button>
     </div>
 
     <div class="search-row">
         <label class="search-field">
-            <span>Поиск по названию, описанию или тегам</span>
+            <span>@Loc.T("search.inputLabel")</span>
             <input
                 value="@Library.SearchQuery"
                 @oninput="HandleSearchInput"
-                placeholder="Например: space, city, family"
+                placeholder="@Loc.T("search.placeholder")"
                 autocomplete="off" />
         </label>
 
         <label class="sort-field">
-            <span>Сортировка</span>
+            <span>@Loc.T("search.sortLabel")</span>
             <select value="@Library.SortMode" @onchange="HandleSortChange">
                 @foreach (var option in Library.SortOptions)
                 {
@@ -85,16 +92,16 @@
         {
             <button
                 type="button"
-                class="genre-chip @(Library.SelectedGenres.Contains(genre) ? "is-selected" : string.Empty)"
-                @onclick="() => Library.ToggleGenre(genre)">
-                @genre
+                class="genre-chip @(Library.SelectedGenreIds.Contains(genre.Id) ? "is-selected" : string.Empty)"
+                @onclick="() => Library.ToggleGenre(genre.Id)">
+                @genre.Name
             </button>
         }
     </div>
 
     <div class="filter-summary">
         <span>@Library.StatusSummary</span>
-        <span>@(Library.SelectedGenres.Count == 0 ? "Жанры не ограничены" : string.Join(", ", Library.SelectedGenres))</span>
+        <span>@(Library.SelectedGenreIds.Count == 0 ? Loc.T("search.genresUnrestricted") : string.Join(", ", Library.AvailableGenres.Where(g => Library.SelectedGenreIds.Contains(g.Id)).Select(g => g.Name)))</span>
     </div>
 </section>
 
@@ -102,49 +109,80 @@
     <article id="catalog" class="panel catalog-panel">
         <div class="section-heading">
             <div>
-                <span class="section-label">Каталог</span>
-                <h3>Фильмы, которые подходят под текущий вкус</h3>
+                <span class="section-label">@Loc.T("catalog.label")</span>
+                <h3>@Loc.T("catalog.heading")</h3>
             </div>
-            <span class="count-pill">@filteredMovies.Count</span>
+            <span class="count-pill">@catalogMovies.Count</span>
         </div>
 
-        @if (filteredMovies.Count == 0)
+        @if (Library.SortMode == "recommended" && Library.SelectedGenreIds.Count == 0 && !Library.IsPersonalizedCatalog && !Library.IsLoading)
+        {
+            <p class="muted personalization-hint">@Loc.T("catalog.personalizationHint")</p>
+        }
+
+        @if (Library.IsLoading)
+        {
+            <div class="movie-grid">
+                @for (var i = 0; i < 6; i++)
+                {
+                    <div class="movie-card skeleton"></div>
+                }
+            </div>
+        }
+        else if (catalogMovies.Count == 0)
         {
             <div class="empty-state">
-                <h4>Ничего не найдено</h4>
-                <p>Снимите часть жанров или попробуйте более широкий запрос.</p>
+                <h4>@Loc.T("catalog.empty.title")</h4>
+                <p>@Loc.T("catalog.empty.body")</p>
             </div>
         }
         else
         {
             <div class="movie-grid">
-                @foreach (var movie in filteredMovies)
+                @foreach (var movie in catalogMovies)
                 {
                     <article class="movie-card @(Library.SelectedMovieId == movie.Id ? "is-selected" : string.Empty)" @onclick="() => Library.SelectMovie(movie)">
-                        <div class="movie-card-top">
-                            <div>
-                                <span class="year-pill">@movie.Year</span>
-                                <h4>@movie.Title</h4>
-                            </div>
-                            <span class="rating-pill">@movie.CommunityScore.ToString("0.0")</span>
-                        </div>
-
-                        <p>@movie.Description</p>
-
-                        <div class="meta-line">
-                            <span>@movie.Duration</span>
-                            <span>@movie.Spotlight</span>
-                        </div>
-
-                        <div class="chip-row">
-                            @foreach (var genre in movie.Genres)
+                        <div class="movie-poster">
+                            @if (movie.PosterUrl is not null)
                             {
-                                <span class="genre-tag">@genre</span>
+                                <img src="@movie.PosterUrl" alt="@movie.Title" loading="lazy" />
                             }
+                            else
+                            {
+                                <span class="poster-placeholder">@movie.Title.Substring(0, 1)</span>
+                            }
+                        </div>
+
+                        <div class="movie-card-body">
+                            <div class="movie-card-top">
+                                <div>
+                                    <span class="year-pill">@(movie.Year?.ToString() ?? "—")</span>
+                                    <h4>@movie.Title</h4>
+                                </div>
+                                <span class="rating-pill">@movie.ScoreLabel</span>
+                            </div>
+
+                            <p>@movie.Overview</p>
+
+                            <div class="chip-row">
+                                @foreach (var genre in movie.Genres.Take(3))
+                                {
+                                    <span class="genre-tag">@genre</span>
+                                }
+                            </div>
                         </div>
                     </article>
                 }
             </div>
+
+            @if (Library.CanLoadMore)
+            {
+                <button type="button" class="load-more-button" @onclick="Library.LoadMore">@Loc.T("catalog.loadMore")</button>
+            }
+            else if (Library.IsLoadingMore)
+            {
+                <div class="load-more-status">@Loc.T("catalog.loading")</div>
+            }
         }
     </article>
 
@@ -152,103 +190,74 @@
         <section id="recommendations" class="panel rail-panel">
             <div class="section-heading compact">
                 <div>
-                    <span class="section-label">Рекомендации</span>
-                    <h3>Подстраиваются под последние просмотры и оценки</h3>
+                    <span class="section-label">@Loc.T("recs.label")</span>
+                    <h3>@Loc.T("recs.heading")</h3>
                 </div>
             </div>
 
-            <div class="recommendation-stack">
-                @foreach (var recommendation in recommendations)
-                {
-                    <article class="recommendation-card" @onclick="() => Library.SelectMovie(recommendation.Movie)">
-                        <div class="recommendation-card-top">
-                            <div>
-                                <h4>@recommendation.Movie.Title</h4>
-                                <p>@recommendation.Reason</p>
-                            </div>
-                            <span class="score-chip">@recommendation.Score</span>
-                        </div>
-
-                        <div class="chip-row">
-                            @foreach (var genre in recommendation.MatchingGenres)
-                            {
-                                <span class="genre-tag accent">@genre</span>
-                            }
-                        </div>
-                    </article>
-                }
-            </div>
-        </section>
-
-        <section class="panel details-panel">
-            <div class="section-heading compact">
-                <div>
-                    <span class="section-label">Карточка</span>
-                    <h3>@(selectedMovie?.Title ?? "Выберите фильм")</h3>
-                </div>
-            </div>
-
-            @if (selectedMovie is not null)
+            @if (recommendations.Count == 0)
             {
-                <p class="detail-description">@selectedMovie.Description</p>
-
-                <div class="detail-grid">
-                    <div>
-                        <span>Год</span>
-                        <strong>@selectedMovie.Year</strong>
-                    </div>
-                    <div>
-                        <span>Длительность</span>
-                        <strong>@selectedMovie.Duration</strong>
-                    </div>
-                    <div>
-                        <span>Рейтинг каталога</span>
-                        <strong>@selectedMovie.CommunityScore.ToString("0.0")</strong>
-                    </div>
-                </div>
-
-                <div class="rating-section">
-                    <span>Ваша оценка</span>
-                    <div class="star-row">
-                        @for (var rating = 1; rating <= 5; rating++)
-                        {
-                            var currentRating = rating;
-                            <button
-                                type="button"
-                                class="star-button @(Library.GetRating(selectedMovie) >= currentRating ? "active" : string.Empty)"
-                                @onclick="() => Library.RateMovie(selectedMovie, currentRating)">
-                                ★
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                <div class="chip-row">
-                    @foreach (var genre in selectedMovie.Genres)
-                    {
-                        <span class="genre-tag">@genre</span>
-                    }
-                </div>
+                <p class="muted">@Loc.T("recs.empty")</p>
             }
             else
             {
-                <p class="detail-description muted">
-                    Кликните по любому фильму, чтобы добавить его в недавние просмотры и оценить его.
-                </p>
+                <div class="recommendation-stack">
+                    @foreach (var recommendation in recommendations)
+                    {
+                        <article class="recommendation-card" @onclick="() => Library.SelectMovie(recommendation.Movie)">
+                            <div class="movie-poster small">
+                                @if (recommendation.Movie.PosterUrl is not null)
+                                {
+                                    <img src="@recommendation.Movie.PosterUrl" alt="@recommendation.Movie.Title" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span class="poster-placeholder">@recommendation.Movie.Title.Substring(0, 1)</span>
+                                }
+                            </div>
+
+                            <div class="recommendation-card-body">
+                                <div class="recommendation-card-top">
+                                    <div>
+                                        <h4>@recommendation.Movie.Title</h4>
+                                        <p>@recommendation.Reason</p>
+                                    </div>
+                                    <span class="score-chip">@recommendation.Score.ToString("0")</span>
+                                </div>
+
+                                <div class="chip-row">
+                                    @foreach (var genre in recommendation.MatchingGenres)
+                                    {
+                                        <span class="genre-tag accent">@genre</span>
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
             }
         </section>
 
         <section class="panel history-panel">
             <div class="section-heading compact">
                 <div>
-                    <span class="section-label">Недавние просмотры</span>
-                    <h3>История, на которой строятся рекомендации</h3>
+                    <span class="section-label">@Loc.T("history.label")</span>
+                    <h3>@Loc.T("history.heading")</h3>
                 </div>
             </div>
 
+            @if (!Library.IsAuthenticated)
+            {
+                <p class="muted auth-hint">
+                    <a href="/account/login">@Loc.T("history.authHint.login")</a> @Loc.T("history.authHint.or")
+                    <a href="/account/register">@Loc.T("history.authHint.register")</a>,
+                    @Loc.T("history.authHint.suffix")
+                </p>
+            }
+
             @if (recentMovies.Count == 0)
             {
-                <p class="muted">Пока пусто. Откройте несколько карточек, чтобы персонализация стала заметнее.</p>
+                <p class="muted">@Loc.T("history.empty")</p>
             }
             else
             {
@@ -257,7 +266,7 @@
                     {
                         <button type="button" class="history-item" @onclick="() => Library.SelectMovie(movie)">
                             <span>@movie.Title</span>
-                            <small>@movie.Year</small>
+                            <small>@(movie.Year?.ToString() ?? "—")</small>
                         </button>
                     }
                 </div>
@@ -266,10 +275,86 @@
     </aside>
 </section>
 
+@if (selectedMovie is not null)
+{
+    <div class="modal-overlay" @onclick="Library.CloseDetail">
+        <div class="modal-card" @onclick:stopPropagation="true">
+            <button type="button" class="modal-close" @onclick="Library.CloseDetail">✕</button>
+
+            @if (selectedMovie.BackdropUrl is not null)
+            {
+                <div class="modal-backdrop" style="background-image:url('@selectedMovie.BackdropUrl')"></div>
+            }
+
+            <div class="modal-body">
+                <div class="modal-poster">
+                    @if (selectedMovie.PosterUrl is not null)
+                    {
+                        <img src="@selectedMovie.PosterUrl" alt="@selectedMovie.Title" />
+                    }
+                    else
+                    {
+                        <span class="poster-placeholder">@selectedMovie.Title.Substring(0, 1)</span>
+                    }
+                </div>
+
+                <div class="modal-info">
+                    <h3>@selectedMovie.Title</h3>
+
+                    <div class="chip-row">
+                        @foreach (var genre in selectedMovie.Genres)
+                        {
+                            <span class="genre-tag">@genre</span>
+                        }
+                    </div>
+
+                    <p class="detail-description">@selectedMovie.Overview</p>
+
+                    <div class="detail-grid">
+                        <div>
+                            <span>@Loc.T("modal.year")</span>
+                            <strong>@(selectedMovie.Year?.ToString() ?? Loc.T("modal.noYear"))</strong>
+                        </div>
+                        <div>
+                            <span>@Loc.T("modal.duration")</span>
+                            <strong>@selectedMovie.DurationLabel</strong>
+                        </div>
+                        <div>
+                            <span>@Loc.T("modal.rating")</span>
+                            <strong>@selectedMovie.ScoreLabel</strong>
+                        </div>
+                    </div>
+
+                    <div class="rating-section">
+                        <span>@Loc.T("modal.yourRating")</span>
+                        <div class="star-row">
+                            @for (var rating = 1; rating <= 5; rating++)
+                            {
+                                var currentRating = rating;
+                                <button
+                                    type="button"
+                                    class="star-button @(Library.GetRating(selectedMovie) >= currentRating ? "active" : string.Empty)"
+                                    @onclick="() => Library.RateMovie(selectedMovie, currentRating)">
+                                    ★
+                                </button>
+                            }
+                        </div>
+                        @if (!Library.IsAuthenticated)
+                        {
+                            <p class="muted auth-hint"><a href="/account/login">@Loc.T("modal.loginPrefix")</a>@Loc.T("modal.loginSuffix")</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         Library.Changed += HandleLibraryChanged;
+        await Library.InitializeAsync();
     }
 
     private void HandleLibraryChanged() => InvokeAsync(StateHasChanged);

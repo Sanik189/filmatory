@@ -1,0 +1,107 @@
+@page "/account/register"
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject LocalizationState Loc
+
+<PageTitle>Filmatory — @Loc.T("auth.register.title")</PageTitle>
+
+<section class="auth-card panel">
+    <span class="section-label">Filmatory</span>
+    <h2>@Loc.T("auth.register.title")</h2>
+    <p class="auth-subtitle">@Loc.T("auth.register.subtitle")</p>
+
+    @if (errorMessage is not null)
+    {
+        <p class="auth-error">@errorMessage</p>
+    }
+
+    <EditForm Model="Input" FormName="register" OnValidSubmit="RegisterUser" method="post" class="auth-form">
+        <DataAnnotationsValidator />
+
+        <label>
+            <span>@Loc.T("auth.username")</span>
+            <InputText @bind-Value="Input.UserName" autocomplete="username" />
+            <ValidationMessage For="() => Input.UserName" />
+        </label>
+
+        <label>
+            <span>@Loc.T("auth.email")</span>
+            <InputText @bind-Value="Input.Email" type="email" autocomplete="email" />
+            <ValidationMessage For="() => Input.Email" />
+        </label>
+
+        <label>
+            <span>@Loc.T("auth.password")</span>
+            <InputText @bind-Value="Input.Password" type="password" autocomplete="new-password" />
+            <ValidationMessage For="() => Input.Password" />
+        </label>
+
+        <label>
+            <span>@Loc.T("auth.confirmPassword")</span>
+            <InputText @bind-Value="Input.ConfirmPassword" type="password" autocomplete="new-password" />
+            <ValidationMessage For="() => Input.ConfirmPassword" />
+        </label>
+
+        <button type="submit" class="auth-submit">@Loc.T("auth.submit.register")</button>
+    </EditForm>
+
+    <p class="auth-switch">@Loc.T("auth.switch.haveAccount") <a href="/account/login">@Loc.T("auth.switch.toLogin")</a></p>
+</section>
+
+@code {
+    [SupplyParameterFromForm]
+    private RegisterModel Input { get; set; } = new();
+
+    private string? errorMessage;
+
+    private async Task RegisterUser()
+    {
+        Input ??= new();
+
+        var user = new ApplicationUser
+        {
+            UserName = Input.UserName,
+            Email = Input.Email
+        };
+
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            errorMessage = string.Join(" ", result.Errors.Select(DescribeError));
+            return;
+        }
+
+        await SignInManager.SignInAsync(user, isPersistent: true);
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private string DescribeError(IdentityError error) => error.Code switch
+    {
+        "DuplicateUserName" => Loc.T("auth.error.duplicateUserName"),
+        "DuplicateEmail" => Loc.T("auth.error.duplicateEmail"),
+        "PasswordTooShort" => Loc.T("auth.error.passwordTooShort"),
+        _ => error.Description
+    };
+
+    private sealed class RegisterModel
+    {
+        [Required(ErrorMessage = "Укажите имя пользователя")]
+        [StringLength(32, MinimumLength = 3, ErrorMessage = "От 3 до 32 символов")]
+        public string UserName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Укажите email")]
+        [EmailAddress(ErrorMessage = "Некорректный email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Укажите пароль")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Минимум 6 символов")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Повторите пароль")]
+        [Compare(nameof(Password), ErrorMessage = "Пароли не совпадают")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

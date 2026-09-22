@@ -37,30 +37,99 @@
     text-transform: uppercase;
     letter-spacing: 0.22em;
     font-size: 0.72rem;
-    color: rgba(236, 231, 225, 0.72);
+    color: var(--text-muted);
 }
 
 .brand-lockup h1 {
     margin: 0;
     font-size: clamp(1.4rem, 2vw, 2.2rem);
     line-height: 1.05;
-    color: #fff8f1;
+    color: var(--text-main);
 }
 
-.header-badge {
-    padding: 0.9rem 1rem;
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.6rem 0.7rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(247, 240, 233, 0.82);
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(14px);
+}
+
+.header-user {
+    padding: 0.6rem 0.8rem 0.6rem 0.4rem;
+    border-radius: 999px;
+    color: var(--text-muted);
     font-size: 0.9rem;
     white-space: nowrap;
-    backdrop-filter: blur(14px);
+    text-decoration: none;
+}
+
+.header-user:hover {
+    color: var(--text-main);
+}
+
+.lang-switch {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.lang-link {
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+}
+
+.lang-link:hover {
+    color: var(--text-main);
+}
+
+.lang-link.is-active {
+    background: var(--panel-bg-strong);
+    color: var(--text-main);
+}
+
+.header-link {
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    color: var(--text-main);
+    font-size: 0.88rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.header-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.header-link.accent {
+    background: linear-gradient(145deg, rgba(255, 124, 84, 0.9), rgba(255, 186, 114, 0.85));
+    color: #1a120f;
 }
 
 .app-content {
     margin: 0 auto;
     max-width: 1440px;
+}
+
+.app-footer {
+    margin: 32px auto 0;
+    max-width: 1440px;
+    padding-top: 18px;
+    border-top: 1px solid var(--panel-border);
+    color: var(--text-faint);
+    font-size: 0.82rem;
+    line-height: 1.6;
 }
 
 #blazor-error-ui {
@@ -83,3 +152,14 @@
         right: 0.75rem;
         top: 0.5rem;
     }
+
+@media (max-width: 1080px) {
+    .app-header {
+        flex-direction: column;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

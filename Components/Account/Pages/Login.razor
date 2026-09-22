@@ -1,0 +1,89 @@
+@page "/account/login"
+@using System.ComponentModel.DataAnnotations
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+@inject LocalizationState Loc
+
+<PageTitle>Filmatory — @Loc.T("auth.login.title")</PageTitle>
+
+<section class="auth-card panel">
+    <span class="section-label">Filmatory</span>
+    <h2>@Loc.T("auth.login.title")</h2>
+    <p class="auth-subtitle">@Loc.T("auth.login.subtitle")</p>
+
+    @if (errorMessage is not null)
+    {
+        <p class="auth-error">@errorMessage</p>
+    }
+
+    <EditForm Model="Input" FormName="login" OnValidSubmit="LoginUser" method="post" class="auth-form">
+        <DataAnnotationsValidator />
+
+        <label>
+            <span>@Loc.T("auth.email")</span>
+            <InputText @bind-Value="Input.Email" type="email" autocomplete="username" />
+            <ValidationMessage For="() => Input.Email" />
+        </label>
+
+        <label>
+            <span>@Loc.T("auth.password")</span>
+            <InputText @bind-Value="Input.Password" type="password" autocomplete="current-password" />
+            <ValidationMessage For="() => Input.Password" />
+        </label>
+
+        <button type="submit" class="auth-submit">@Loc.T("auth.submit.login")</button>
+    </EditForm>
+
+    <p class="auth-switch">@Loc.T("auth.switch.noAccount") <a href="/account/register">@Loc.T("auth.switch.toRegister")</a></p>
+</section>
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private string? errorMessage;
+
+    private async Task LoginUser()
+    {
+        Input ??= new();
+
+        var user = await UserManager.FindByEmailAsync(Input.Email);
+        if (user is null)
+        {
+            errorMessage = Loc.T("auth.error.invalidCredentials");
+            return;
+        }
+
+        var result = await SignInManager.PasswordSignInAsync(user, Input.Password, isPersistent: true, lockoutOnFailure: true);
+
+        if (result.Succeeded)
+        {
+            var target = !string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.StartsWith('/') && !ReturnUrl.StartsWith("//")
+                ? ReturnUrl
+                : "/";
+            Navigation.NavigateTo(target, forceLoad: true);
+            return;
+        }
+
+        errorMessage = result.IsLockedOut
+            ? Loc.T("auth.error.lockedOut")
+            : Loc.T("auth.error.invalidCredentials");
+    }
+
+    private sealed class LoginModel
+    {
+        [Required(ErrorMessage = "Укажите email")]
+        [EmailAddress(ErrorMessage = "Некорректный email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Укажите пароль")]
+        public string Password { get; set; } = string.Empty;
+    }
+}

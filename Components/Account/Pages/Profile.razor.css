@@ -1,0 +1,190 @@
+.profile-header,
+.profile-preferences,
+.profile-history {
+    max-width: 720px;
+    margin: 0 auto 22px;
+    padding: 28px;
+}
+
+.section-heading.compact {
+    margin-bottom: 14px;
+}
+
+.muted {
+    color: var(--text-muted);
+    line-height: 1.65;
+}
+
+.year-pill,
+.rating-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    padding: 0.35rem 0.7rem;
+    font-size: 0.82rem;
+}
+
+.back-link {
+    display: inline-flex;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    color: var(--text-main);
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--panel-border);
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.profile-header h2 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+}
+
+.profile-stats article {
+    padding: 16px 18px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.profile-stats strong {
+    display: block;
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+
+.profile-stats span {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.pref-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.pref-toggle input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+}
+
+.year-range-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.year-range-row label {
+    display: grid;
+    gap: 8px;
+}
+
+.year-range-row span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.year-range-row input {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(9, 13, 20, 0.68);
+    color: var(--text-main);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 0.9rem;
+    outline: none;
+}
+
+.pref-hint {
+    margin-top: 10px;
+    font-size: 0.86rem;
+}
+
+.pref-save {
+    margin-top: 18px;
+    width: auto;
+    padding-left: 1.6rem;
+    padding-right: 1.6rem;
+}
+
+.save-confirmation {
+    margin-top: 10px;
+    color: var(--success);
+    font-size: 0.9rem;
+}
+
+.profile-history-list {
+    display: grid;
+    gap: 12px;
+}
+
+.profile-history-item {
+    display: flex;
+    gap: 14px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.profile-history-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+}
+
+.profile-history-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.profile-history-top strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-history-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.86rem;
+}
+
+@media (max-width: 640px) {
+    .profile-header,
+    .profile-preferences,
+    .profile-history {
+        padding: 20px;
+    }
+
+    .profile-stats,
+    .year-range-row {
+        grid-template-columns: 1fr;
+    }
+}

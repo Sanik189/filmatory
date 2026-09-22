@@ -1,23 +1,44 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject LocalizationState Loc
 
 <div class="app-shell">
     <header class="app-header">
         <div class="brand-lockup">
-            <span class="brand-mark">POP</span>
+            <span class="brand-mark">F</span>
             <div>
-                <p>Movies for you</p>
-                <h1>This platformn knows better what you want to watch than you do</h1>
+                <p>@Loc.T("brand.tagline")</p>
+                <h1>Filmatory</h1>
             </div>
         </div>
 
-        <div class="header-badge">
-            Personalized movie recommendations based on your preferences
+        <div class="header-actions">
+            <div class="lang-switch">
+                <a class="lang-link @(Loc.Current == AppLanguage.Ru ? "is-active" : string.Empty)" href="@BuildLanguageUrl("ru")">RU</a>
+                <a class="lang-link @(Loc.Current == AppLanguage.En ? "is-active" : string.Empty)" href="@BuildLanguageUrl("en")">EN</a>
+            </div>
+
+            <AuthorizeView>
+                <Authorized>
+                    <a class="header-user" href="/account/profile">@Loc.T("nav.hello", context.User.Identity?.Name ?? string.Empty)</a>
+                    <a class="header-link" href="/account/logout">@Loc.T("nav.logout")</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="header-link" href="/account/login">@Loc.T("nav.login")</a>
+                    <a class="header-link accent" href="/account/register">@Loc.T("nav.register")</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
     </header>
 
     <main class="app-content">
         @Body
     </main>
+
+    <footer class="app-footer">
+        @Loc.T("footer.tmdbPrefix") <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDb</a>.
+        @Loc.T("footer.tmdbSuffix")
+    </footer>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
@@ -25,3 +46,12 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private string BuildLanguageUrl(string lang)
+    {
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var currentPath = string.IsNullOrEmpty(relativePath) ? "/" : "/" + relativePath;
+        return $"/set-language/{lang}?returnUrl={Uri.EscapeDataString(currentPath)}";
+    }
+}

@@ -1,0 +1,185 @@
+@page "/account/profile"
+@rendermode InteractiveServer
+@inject UserManager<ApplicationUser> UserManager
+@inject WatchHistoryStore HistoryStore
+@inject MovieLibraryState Library
+@inject NavigationManager Navigation
+@inject LocalizationState Loc
+
+<PageTitle>Filmatory — @Loc.T("profile.title")</PageTitle>
+
+@if (user is not null)
+{
+    <section class="panel profile-header">
+        <span class="section-label">@Loc.T("profile.title")</span>
+        <h2>@user.UserName</h2>
+        <p class="auth-subtitle">@Loc.T("profile.subtitle")</p>
+
+        <div class="profile-stats">
+            <article>
+                <strong>@history.Count</strong>
+                <span>@Loc.T("profile.stat.watched")</span>
+            </article>
+            <article>
+                <strong>@history.Count(h => h.Rating is not null)</strong>
+                <span>@Loc.T("profile.stat.rated")</span>
+            </article>
+        </div>
+
+        <a class="back-link" href="/">@Loc.T("profile.backHome")</a>
+    </section>
+
+    <section class="panel profile-preferences">
+        <div class="section-heading compact">
+            <div>
+                <span class="section-label">@Loc.T("profile.preferences.title")</span>
+            </div>
+        </div>
+
+        <label class="pref-toggle">
+            <input type="checkbox" @bind="yearFilterEnabled" />
+            <span>@Loc.T("profile.preferences.yearRange")</span>
+        </label>
+
+        @if (yearFilterEnabled)
+        {
+            <div class="year-range-row">
+                <label>
+                    <span>@Loc.T("profile.preferences.yearFrom")</span>
+                    <input type="number" min="1900" max="@maxYear" @bind="yearFrom" />
+                </label>
+                <label>
+                    <span>@Loc.T("profile.preferences.yearTo")</span>
+                    <input type="number" min="1900" max="@maxYear" @bind="yearTo" />
+                </label>
+            </div>
+
+            <p class="muted pref-hint">@Loc.T("profile.preferences.hint")</p>
+        }
+
+        @if (validationError is not null)
+        {
+            <p class="auth-error">@validationError</p>
+        }
+
+        <button type="button" class="auth-submit pref-save" @onclick="SavePreferences">@Loc.T("profile.preferences.save")</button>
+
+        @if (saved)
+        {
+            <p class="save-confirmation">@Loc.T("profile.preferences.saved")</p>
+        }
+    </section>
+
+    <section class="panel profile-history">
+        <div class="section-heading compact">
+            <div>
+                <span class="section-label">@Loc.T("profile.history.title")</span>
+            </div>
+        </div>
+
+        @if (history.Count == 0)
+        {
+            <p class="muted">@Loc.T("profile.history.empty")</p>
+        }
+        else
+        {
+            <div class="profile-history-list">
+                @foreach (var entry in history)
+                {
+                    <div class="profile-history-item">
+                        <div class="movie-poster small">
+                            @if (entry.PosterUrl is not null)
+                            {
+                                <img src="@entry.PosterUrl" alt="@entry.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="poster-placeholder">@entry.Title.Substring(0, 1)</span>
+                            }
+                        </div>
+
+                        <div class="profile-history-body">
+                            <div class="profile-history-top">
+                                <strong>@entry.Title</strong>
+                                <span class="year-pill">@(entry.Year?.ToString() ?? "—")</span>
+                            </div>
+
+                            <div class="profile-history-meta">
+                                @if (entry.Rating is int r)
+                                {
+                                    <span class="rating-pill">★ @r/5</span>
+                                }
+                                else
+                                {
+                                    <span class="muted">@Loc.T("profile.history.notRated")</span>
+                                }
+                                <span class="muted">@Loc.T("profile.history.viewedOn") @entry.ViewedAt.ToLocalTime().ToString("d")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private ApplicationUser? user;
+    private List<WatchedMovie> history = [];
+    private bool yearFilterEnabled;
+    private int? yearFrom;
+    private int? yearTo;
+    private string? validationError;
+    private bool saved;
+    private int maxYear => DateTime.Now.Year + 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = AuthStateTask is not null ? await AuthStateTask : null;
+
+        if (authState?.User.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/account/login?returnUrl=/account/profile", forceLoad: true);
+            return;
+        }
+
+        user = await UserManager.GetUserAsync(authState.User);
+
+        if (user is null)
+        {
+            Navigation.NavigateTo("/account/login", forceLoad: true);
+            return;
+        }
+
+        yearFilterEnabled = user.YearFilterEnabled;
+        yearFrom = user.PreferredYearFrom;
+        yearTo = user.PreferredYearTo;
+
+        history = await HistoryStore.GetAllAsync(user.Id);
+    }
+
+    private async Task SavePreferences()
+    {
+        validationError = null;
+        saved = false;
+
+        if (yearFilterEnabled && yearFrom is int f && yearTo is int t && f > t)
+        {
+            validationError = Loc.T("profile.preferences.invalidRange");
+            return;
+        }
+
+        user!.YearFilterEnabled = yearFilterEnabled;
+        user.PreferredYearFrom = yearFilterEnabled ? yearFrom : null;
+        user.PreferredYearTo = yearFilterEnabled ? yearTo : null;
+
+        await UserManager.UpdateAsync(user);
+
+        Library.UpdateYearPreferences(user.YearFilterEnabled, user.PreferredYearFrom, user.PreferredYearTo);
+
+        saved = true;
+    }
+}
