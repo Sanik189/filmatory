@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "muhTihUYTgw=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\vapro\\OneDrive\\Desktop\\POP\\POP.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\vapro\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.10\\microsoft.aspnetcore.app.internal.assets.10.0.10.nupkg.sha512"
+  ],
+  "logs": []
+}
