@@ -210,17 +210,115 @@
     margin-bottom: 14px;
 }
 
+.content-type-switch[b-jeqgq0uqiq] {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    margin-bottom: 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.type-filter-btn[b-jeqgq0uqiq] {
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.type-filter-btn:hover[b-jeqgq0uqiq] {
+    color: var(--text-main);
+}
+
+.type-filter-btn.is-active[b-jeqgq0uqiq] {
+    background: var(--panel-bg-strong);
+    color: var(--text-main);
+}
+
 .genre-chip[b-jeqgq0uqiq],
 .genre-tag[b-jeqgq0uqiq],
 .year-pill[b-jeqgq0uqiq],
 .rating-pill[b-jeqgq0uqiq],
 .score-chip[b-jeqgq0uqiq],
-.count-pill[b-jeqgq0uqiq] {
+.count-pill[b-jeqgq0uqiq],
+.type-tag[b-jeqgq0uqiq] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 999px;
     white-space: nowrap;
+}
+
+.type-tag[b-jeqgq0uqiq] {
+    background: var(--accent-soft);
+    color: #ffd9cb;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.not-interested-btn[b-jeqgq0uqiq] {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(10, 12, 17, 0.75);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.movie-card:hover .not-interested-btn[b-jeqgq0uqiq],
+.recommendation-card:hover .not-interested-btn[b-jeqgq0uqiq] {
+    opacity: 1;
+}
+
+.not-interested-btn:hover[b-jeqgq0uqiq] {
+    color: #fff;
+    background: rgba(255, 107, 107, 0.65);
+}
+
+.modal-actions[b-jeqgq0uqiq] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.modal-action-btn[b-jeqgq0uqiq] {
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.modal-action-btn:hover[b-jeqgq0uqiq] {
+    border-color: rgba(255, 124, 84, 0.46);
+}
+
+.modal-action-btn.is-active[b-jeqgq0uqiq] {
+    background: var(--accent-soft);
+    border-color: rgba(255, 124, 84, 0.46);
+    color: #ffd9cb;
 }
 
 .genre-chip[b-jeqgq0uqiq] {
@@ -290,9 +388,11 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.03);
     color: var(--text-main);
+    cursor: pointer;
 }
 
 .movie-card[b-jeqgq0uqiq] {
+    position: relative;
     display: flex;
     gap: 16px;
     padding: 14px;
@@ -300,6 +400,7 @@
 }
 
 .recommendation-card[b-jeqgq0uqiq] {
+    position: relative;
     display: flex;
     gap: 12px;
 }
@@ -652,6 +753,67 @@
 
 .modal-info h3[b-jeqgq0uqiq] {
     font-size: 1.6rem;
+}
+
+.watch-providers[b-jeqgq0uqiq] {
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.watch-providers-label[b-jeqgq0uqiq] {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.watch-provider-group[b-jeqgq0uqiq] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.watch-provider-group-label[b-jeqgq0uqiq] {
+    flex-shrink: 0;
+    width: 90px;
+    color: var(--text-faint);
+    font-size: 0.82rem;
+}
+
+.watch-provider-logos[b-jeqgq0uqiq] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.watch-provider-logos img[b-jeqgq0uqiq] {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.watch-provider-chip[b-jeqgq0uqiq] {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.78rem;
+}
+
+.watch-provider-link[b-jeqgq0uqiq] {
+    align-self: flex-start;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--accent-2);
+}
+
+.watch-provider-attribution[b-jeqgq0uqiq] {
+    color: var(--text-faint);
+    font-size: 0.74rem;
 }
 
 @media (max-width: 640px) {

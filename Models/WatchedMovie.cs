@@ -8,6 +8,8 @@ public sealed class WatchedMovie
 
     public int MovieId { get; set; }
 
+    public MediaType Type { get; set; }
+
     public string Title { get; set; } = string.Empty;
 
     public string? PosterUrl { get; set; }
@@ -17,6 +19,8 @@ public sealed class WatchedMovie
     public string GenresJson { get; set; } = "[]";
 
     public int? Rating { get; set; }
+
+    public bool NotInterested { get; set; }
 
     public DateTime ViewedAt { get; set; }
 

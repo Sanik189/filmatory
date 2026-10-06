@@ -4,18 +4,18 @@
 
 <div class="app-shell">
     <header class="app-header">
-        <div class="brand-lockup">
+        <a class="brand-lockup" href="/">
             <span class="brand-mark">F</span>
             <div>
                 <p>@Loc.T("brand.tagline")</p>
                 <h1>Filmatory</h1>
             </div>
-        </div>
+        </a>
 
         <div class="header-actions">
             <div class="lang-switch">
-                <a class="lang-link @(Loc.Current == AppLanguage.Ru ? "is-active" : string.Empty)" href="@BuildLanguageUrl("ru")">RU</a>
-                <a class="lang-link @(Loc.Current == AppLanguage.En ? "is-active" : string.Empty)" href="@BuildLanguageUrl("en")">EN</a>
+                <a class="lang-link @(Loc.Current == AppLanguage.Ru ? "is-active" : string.Empty)" href="@BuildLanguageUrl("ru")" data-enhance-nav="false">RU</a>
+                <a class="lang-link @(Loc.Current == AppLanguage.En ? "is-active" : string.Empty)" href="@BuildLanguageUrl("en")" data-enhance-nav="false">EN</a>
             </div>
 
             <AuthorizeView>

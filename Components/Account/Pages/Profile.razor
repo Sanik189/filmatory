@@ -57,6 +57,45 @@
             <p class="muted pref-hint">@Loc.T("profile.preferences.hint")</p>
         }
 
+        <div class="pref-section-divider"></div>
+
+        <label class="pref-toggle">
+            <input type="checkbox" @bind="watchProviderFilterEnabled" />
+            <span>@Loc.T("profile.preferences.providers.enable")</span>
+        </label>
+
+        @if (watchProviderFilterEnabled)
+        {
+            @if (Library.AvailableWatchProviders.Count == 0)
+            {
+                <p class="muted pref-hint">@Loc.T("profile.preferences.providers.empty")</p>
+            }
+            else
+            {
+                <p class="muted pref-hint">@Loc.T("profile.preferences.providers.hint")</p>
+
+                <div class="provider-picker">
+                    @foreach (var provider in Library.AvailableWatchProviders)
+                    {
+                        <button
+                            type="button"
+                            class="provider-chip @(selectedProviderIds.Contains(provider.Id) ? "is-selected" : string.Empty)"
+                            title="@provider.Name"
+                            @onclick="() => ToggleProvider(provider.Id)">
+                            @if (provider.LogoUrl is not null)
+                            {
+                                <img src="@provider.LogoUrl" alt="@provider.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span>@provider.Name</span>
+                            }
+                        </button>
+                    }
+                </div>
+            }
+        }
+
         @if (validationError is not null)
         {
             <p class="auth-error">@validationError</p>
@@ -67,6 +106,49 @@
         @if (saved)
         {
             <p class="save-confirmation">@Loc.T("profile.preferences.saved")</p>
+        }
+    </section>
+
+    <section class="panel profile-watchlist">
+        <div class="section-heading compact">
+            <div>
+                <span class="section-label">@Loc.T("profile.watchlist.title")</span>
+            </div>
+        </div>
+
+        @if (Library.WatchlistMovies.Count == 0)
+        {
+            <p class="muted">@Loc.T("profile.watchlist.empty")</p>
+        }
+        else
+        {
+            <div class="profile-history-list">
+                @foreach (var movie in Library.WatchlistMovies)
+                {
+                    <div class="profile-history-item">
+                        <div class="movie-poster small">
+                            @if (movie.PosterUrl is not null)
+                            {
+                                <img src="@movie.PosterUrl" alt="@movie.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="poster-placeholder">@movie.Title.Substring(0, 1)</span>
+                            }
+                        </div>
+
+                        <div class="profile-history-body">
+                            <div class="profile-history-top">
+                                <strong>@movie.Title</strong>
+                                <span class="year-pill">@(movie.Year?.ToString() ?? "—")</span>
+                                <span class="type-tag">@(movie.Type == MediaType.Tv ? Loc.T("mediaType.tv") : Loc.T("mediaType.movie"))</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="watchlist-remove-btn" @onclick="() => Library.RemoveFromWatchlist(movie.Key)">@Loc.T("profile.watchlist.remove")</button>
+                    </div>
+                }
+            </div>
         }
     </section>
 
@@ -102,6 +184,7 @@
                             <div class="profile-history-top">
                                 <strong>@entry.Title</strong>
                                 <span class="year-pill">@(entry.Year?.ToString() ?? "—")</span>
+                                <span class="type-tag">@(entry.Type == MediaType.Tv ? Loc.T("mediaType.tv") : Loc.T("mediaType.movie"))</span>
                             </div>
 
                             <div class="profile-history-meta">
@@ -132,6 +215,8 @@
     private bool yearFilterEnabled;
     private int? yearFrom;
     private int? yearTo;
+    private bool watchProviderFilterEnabled;
+    private HashSet<int> selectedProviderIds = [];
     private string? validationError;
     private bool saved;
     private int maxYear => DateTime.Now.Year + 1;
@@ -154,11 +239,31 @@
             return;
         }
 
+        // Profile can be the first page visited after login, so MovieLibraryState might not
+        // have loaded anything yet (watchlist, available providers) — make sure it has.
+        await Library.InitializeAsync();
+
         yearFilterEnabled = user.YearFilterEnabled;
         yearFrom = user.PreferredYearFrom;
         yearTo = user.PreferredYearTo;
 
+        watchProviderFilterEnabled = user.WatchProviderFilterEnabled;
+        selectedProviderIds = (user.PreferredWatchProviderIds ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => int.TryParse(s, out var id) ? id : (int?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToHashSet();
+
         history = await HistoryStore.GetAllAsync(user.Id);
+    }
+
+    private void ToggleProvider(int id)
+    {
+        if (!selectedProviderIds.Add(id))
+        {
+            selectedProviderIds.Remove(id);
+        }
     }
 
     private async Task SavePreferences()
@@ -176,9 +281,15 @@
         user.PreferredYearFrom = yearFilterEnabled ? yearFrom : null;
         user.PreferredYearTo = yearFilterEnabled ? yearTo : null;
 
+        user.WatchProviderFilterEnabled = watchProviderFilterEnabled;
+        user.PreferredWatchProviderIds = watchProviderFilterEnabled && selectedProviderIds.Count > 0
+            ? string.Join(",", selectedProviderIds)
+            : null;
+
         await UserManager.UpdateAsync(user);
 
         Library.UpdateYearPreferences(user.YearFilterEnabled, user.PreferredYearFrom, user.PreferredYearTo);
+        Library.UpdateWatchProviderPreferences(user.WatchProviderFilterEnabled, selectedProviderIds.ToList());
 
         saved = true;
     }

@@ -16,12 +16,12 @@ public static class Translations
         ["footer.tmdbPrefix"] = ("Данные о фильмах предоставлены", "Movie data provided by"),
         ["footer.tmdbSuffix"] = ("Этот продукт использует API TMDb, но не одобрен и не сертифицирован TMDb.", "This product uses the TMDb API but is not endorsed or certified by TMDb."),
 
-        ["hero.eyebrow"] = ("Сайт для открытия фильмов, а не для просмотра", "A site for discovering movies, not streaming them"),
+        ["hero.eyebrow"] = ("Сайт для открытия фильмов", "A site for discovering movies"),
         ["hero.title"] = ("Поиск по каталогу TheMovieDB и рекомендации, которые меняются от ваших последних просмотров.", "Search the TheMovieDB catalog and get recommendations that evolve with what you've recently watched."),
         ["hero.subtitle"] = (
             "Выбирайте несколько жанров одновременно, открывайте карточки фильмов и ставьте оценки — сервис подтягивает актуальные данные из TMDb и перестраивает выдачу под ваш вкус.",
             "Pick several genres at once, open movie cards and rate them — the service pulls live data from TMDb and rebuilds the feed around your taste."),
-        ["hero.stat.movies"] = ("фильмов доступно в TMDb", "movies available on TMDb"),
+        ["hero.stat.movies"] = ("позиций доступно в TMDb", "titles available on TMDb"),
         ["hero.stat.genres"] = ("жанров в умном поиске", "genres in smart search"),
         ["hero.stat.ratings"] = ("оценок уже учитывается", "ratings counted so far"),
         ["hero.personalization"] = ("Персонализация", "Personalization"),
@@ -36,12 +36,18 @@ public static class Translations
             "TMDb API key is not configured. Add it to appsettings.json (TMDb:ApiKey)."),
 
         ["status.withTotal"] = ("{0} из {1:N0} найденных в TMDb", "{0} of {1:N0} found on TMDb"),
-        ["status.simple"] = ("{0} фильмов", "{0} movies"),
+        ["status.simple"] = ("{0} результатов", "{0} results"),
+
+        ["mediaType.all"] = ("Все", "All"),
+        ["mediaType.movies"] = ("Фильмы", "Movies"),
+        ["mediaType.series"] = ("Сериалы", "Series"),
+        ["mediaType.movie"] = ("Фильм", "Movie"),
+        ["mediaType.tv"] = ("Сериал", "TV Show"),
 
         ["search.label"] = ("Smart search", "Smart search"),
         ["search.heading"] = ("Выбор сразу нескольких жанров", "Pick several genres at once"),
         ["search.clear"] = ("Сбросить фильтры", "Clear filters"),
-        ["search.inputLabel"] = ("Поиск по названию фильма", "Search by movie title"),
+        ["search.inputLabel"] = ("Поиск по названию", "Search by title"),
         ["search.placeholder"] = ("Например: Дюна, Начало, Интерстеллар", "e.g. Dune, Inception, Interstellar"),
         ["search.sortLabel"] = ("Сортировка", "Sort by"),
         ["search.genresUnrestricted"] = ("Жанры не ограничены", "All genres"),
@@ -52,7 +58,7 @@ public static class Translations
         ["sort.title"] = ("По названию", "Title"),
 
         ["catalog.label"] = ("Каталог", "Catalog"),
-        ["catalog.heading"] = ("Фильмы, которые подходят под текущий вкус", "Movies matching your taste"),
+        ["catalog.heading"] = ("Подборка под ваш текущий вкус", "Picks matching your taste"),
         ["catalog.empty.title"] = ("Ничего не найдено", "Nothing found"),
         ["catalog.empty.body"] = ("Снимите часть жанров или попробуйте другой запрос.", "Remove some genres or try a different search."),
         ["catalog.loadMore"] = ("Показать ещё", "Show more"),
@@ -69,6 +75,9 @@ public static class Translations
         ["recs.reason.recentInterests"] = ("перекликается с вашими последними интересами: {0}", "echoes your recent interests: {0}"),
         ["recs.reason.reinforces"] = ("усиливает уже высоко оценённые вами истории", "builds on stories you've already rated highly"),
         ["recs.reason.complements"] = ("хорошо дополняет ваш текущий профиль вкуса", "complements your current taste profile"),
+        ["recs.reason.collection"] = ("продолжение истории из той же серии фильмов", "part of the same movie series"),
+        ["recs.reason.people"] = ("с актёрами или режиссёром, которые вам понравились", "features actors or a director you liked"),
+        ["recs.reason.themes"] = ("пересекается по темам с вашими оценёнными историями", "overlaps in themes with titles you've rated"),
 
         ["history.label"] = ("Недавние просмотры", "Recently viewed"),
         ["history.heading"] = ("История, на которой строятся рекомендации", "History that powers your recommendations"),
@@ -85,6 +94,16 @@ public static class Translations
         ["modal.loginPrefix"] = ("Войдите", "Log in"),
         ["modal.loginSuffix"] = (", чтобы оценка сохранилась.", " to save your rating."),
         ["modal.noYear"] = ("—", "—"),
+        ["modal.whereToWatch"] = ("Где посмотреть", "Where to watch"),
+        ["modal.watch.stream"] = ("По подписке", "Streaming"),
+        ["modal.watch.rent"] = ("Аренда", "Rent"),
+        ["modal.watch.buy"] = ("Покупка", "Buy"),
+        ["modal.watch.more"] = ("Все варианты", "See all options"),
+        ["modal.watch.attribution"] = ("Данные о доступности предоставлены JustWatch", "Availability data provided by JustWatch"),
+        ["modal.trailer"] = ("▶ Трейлер", "▶ Trailer"),
+        ["modal.watchlist.add"] = ("+ Посмотреть позже", "+ Watch later"),
+        ["modal.watchlist.remove"] = ("✓ В списке «позже» — убрать", "✓ In watchlist — remove"),
+        ["modal.notInterested"] = ("Не интересно", "Not interested"),
 
         ["auth.login.title"] = ("Вход", "Log in"),
         ["auth.login.subtitle"] = ("Войдите, чтобы ваши просмотры и оценки сохранялись между сеансами.", "Log in so your views and ratings are saved between sessions."),
@@ -128,6 +147,17 @@ public static class Translations
         ["profile.history.notRated"] = ("Без оценки", "Not rated"),
         ["profile.history.viewedOn"] = ("Просмотрено", "Viewed"),
         ["profile.backHome"] = ("На главную", "Back to home"),
+
+        ["profile.watchlist.title"] = ("Посмотреть позже", "Watch later"),
+        ["profile.watchlist.empty"] = ("Список пуст. Добавляйте фильмы и сериалы через карточку с описанием.", "Your list is empty. Add movies and shows from their detail card."),
+        ["profile.watchlist.remove"] = ("Убрать", "Remove"),
+
+        ["profile.preferences.providers.title"] = ("Фильтр по сервисам", "Streaming services filter"),
+        ["profile.preferences.providers.enable"] = ("Показывать только то, что есть на моих сервисах", "Only show titles available on my services"),
+        ["profile.preferences.providers.hint"] = ("Отметьте сервисы, на которые у вас есть подписка.", "Select the services you're subscribed to."),
+        ["profile.preferences.providers.empty"] = ("Список сервисов для вашего региона сейчас недоступен.", "The service list for your region isn't available right now."),
+
+        ["card.notInterestedAria"] = ("Не интересно — скрыть", "Not interested — hide"),
     };
 
     public static string Get(string key, AppLanguage language)

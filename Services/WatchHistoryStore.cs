@@ -32,7 +32,7 @@ public sealed class WatchHistoryStore(ApplicationDbContext db)
         await gate.WaitAsync();
         try
         {
-            var entry = await db.WatchedMovies.FirstOrDefaultAsync(w => w.UserId == userId && w.MovieId == movie.Id);
+            var entry = await db.WatchedMovies.FirstOrDefaultAsync(w => w.UserId == userId && w.MovieId == movie.Id && w.Type == movie.Type);
 
             if (entry is null)
             {
@@ -60,7 +60,7 @@ public sealed class WatchHistoryStore(ApplicationDbContext db)
         await gate.WaitAsync();
         try
         {
-            var entry = await db.WatchedMovies.FirstOrDefaultAsync(w => w.UserId == userId && w.MovieId == movie.Id);
+            var entry = await db.WatchedMovies.FirstOrDefaultAsync(w => w.UserId == userId && w.MovieId == movie.Id && w.Type == movie.Type);
 
             if (entry is null)
             {
@@ -79,10 +79,34 @@ public sealed class WatchHistoryStore(ApplicationDbContext db)
         }
     }
 
+    public async Task MarkNotInterestedAsync(string userId, Movie movie)
+    {
+        await gate.WaitAsync();
+        try
+        {
+            var entry = await db.WatchedMovies.FirstOrDefaultAsync(w => w.UserId == userId && w.MovieId == movie.Id && w.Type == movie.Type);
+
+            if (entry is null)
+            {
+                entry = BuildEntry(userId, movie);
+                db.WatchedMovies.Add(entry);
+            }
+
+            entry.NotInterested = true;
+
+            await db.SaveChangesAsync();
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
     private static WatchedMovie BuildEntry(string userId, Movie movie) => new()
     {
         UserId = userId,
         MovieId = movie.Id,
+        Type = movie.Type,
         Title = movie.Title,
         PosterUrl = movie.PosterUrl,
         Year = movie.Year,

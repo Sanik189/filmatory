@@ -187,6 +187,9 @@ namespace POP.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("PreferredWatchProviderIds")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("PreferredYearFrom")
                         .HasColumnType("INTEGER");
 
@@ -202,6 +205,9 @@ namespace POP.Data.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("WatchProviderFilterEnabled")
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("YearFilterEnabled")
                         .HasColumnType("INTEGER");
@@ -232,6 +238,9 @@ namespace POP.Data.Migrations
                     b.Property<int>("MovieId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("NotInterested")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("PosterUrl")
                         .HasMaxLength(512)
                         .HasColumnType("TEXT");
@@ -247,6 +256,9 @@ namespace POP.Data.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -259,10 +271,49 @@ namespace POP.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "MovieId")
+                    b.HasIndex("UserId", "MovieId", "Type")
                         .IsUnique();
 
                     b.ToTable("WatchedMovies");
+                });
+
+            modelBuilder.Entity("POP.Models.WatchlistItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PosterUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Year")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "MovieId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("WatchlistItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

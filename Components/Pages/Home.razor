@@ -21,7 +21,7 @@
 
         <div class="hero-stats">
             <article>
-                <strong>@Library.TotalResults.ToString("N0")</strong>
+                <strong>@Library.CatalogSize.ToString("N0")</strong>
                 <span>@Loc.T("hero.stat.movies")</span>
             </article>
             <article>
@@ -87,13 +87,19 @@
         </label>
     </div>
 
+    <div class="content-type-switch">
+        <button type="button" class="type-filter-btn @(Library.CurrentContentFilter == ContentFilter.Mixed ? "is-active" : string.Empty)" @onclick="() => Library.SetContentFilter(ContentFilter.Mixed)">@Loc.T("mediaType.all")</button>
+        <button type="button" class="type-filter-btn @(Library.CurrentContentFilter == ContentFilter.MoviesOnly ? "is-active" : string.Empty)" @onclick="() => Library.SetContentFilter(ContentFilter.MoviesOnly)">@Loc.T("mediaType.movies")</button>
+        <button type="button" class="type-filter-btn @(Library.CurrentContentFilter == ContentFilter.SeriesOnly ? "is-active" : string.Empty)" @onclick="() => Library.SetContentFilter(ContentFilter.SeriesOnly)">@Loc.T("mediaType.series")</button>
+    </div>
+
     <div class="genre-wrap">
         @foreach (var genre in Library.AvailableGenres)
         {
             <button
                 type="button"
-                class="genre-chip @(Library.SelectedGenreIds.Contains(genre.Id) ? "is-selected" : string.Empty)"
-                @onclick="() => Library.ToggleGenre(genre.Id)">
+                class="genre-chip @(Library.SelectedGenreNames.Contains(genre.Name) ? "is-selected" : string.Empty)"
+                @onclick="() => Library.ToggleGenre(genre.Name)">
                 @genre.Name
             </button>
         }
@@ -101,7 +107,7 @@
 
     <div class="filter-summary">
         <span>@Library.StatusSummary</span>
-        <span>@(Library.SelectedGenreIds.Count == 0 ? Loc.T("search.genresUnrestricted") : string.Join(", ", Library.AvailableGenres.Where(g => Library.SelectedGenreIds.Contains(g.Id)).Select(g => g.Name)))</span>
+        <span>@(Library.SelectedGenreNames.Count == 0 ? Loc.T("search.genresUnrestricted") : string.Join(", ", Library.SelectedGenreNames))</span>
     </div>
 </section>
 
@@ -115,7 +121,7 @@
             <span class="count-pill">@catalogMovies.Count</span>
         </div>
 
-        @if (Library.SortMode == "recommended" && Library.SelectedGenreIds.Count == 0 && !Library.IsPersonalizedCatalog && !Library.IsLoading)
+        @if (Library.SortMode == "recommended" && Library.SelectedGenreNames.Count == 0 && !Library.IsPersonalizedCatalog && !Library.IsLoading)
         {
             <p class="muted personalization-hint">@Loc.T("catalog.personalizationHint")</p>
         }
@@ -141,7 +147,9 @@
             <div class="movie-grid">
                 @foreach (var movie in catalogMovies)
                 {
-                    <article class="movie-card @(Library.SelectedMovieId == movie.Id ? "is-selected" : string.Empty)" @onclick="() => Library.SelectMovie(movie)">
+                    <article class="movie-card @(Library.SelectedMovieKey == movie.Key ? "is-selected" : string.Empty)" @onclick="() => Library.SelectMovie(movie)">
+                        <button type="button" class="not-interested-btn" title="@Loc.T("card.notInterestedAria")" aria-label="@Loc.T("card.notInterestedAria")" @onclick="() => Library.MarkNotInterested(movie)" @onclick:stopPropagation="true">✕</button>
+
                         <div class="movie-poster">
                             @if (movie.PosterUrl is not null)
                             {
@@ -157,6 +165,7 @@
                             <div class="movie-card-top">
                                 <div>
                                     <span class="year-pill">@(movie.Year?.ToString() ?? "—")</span>
+                                    <span class="type-tag">@(movie.Type == MediaType.Tv ? Loc.T("mediaType.tv") : Loc.T("mediaType.movie"))</span>
                                     <h4>@movie.Title</h4>
                                 </div>
                                 <span class="rating-pill">@movie.ScoreLabel</span>
@@ -205,6 +214,8 @@
                     @foreach (var recommendation in recommendations)
                     {
                         <article class="recommendation-card" @onclick="() => Library.SelectMovie(recommendation.Movie)">
+                            <button type="button" class="not-interested-btn" title="@Loc.T("card.notInterestedAria")" aria-label="@Loc.T("card.notInterestedAria")" @onclick="() => Library.MarkNotInterested(recommendation.Movie)" @onclick:stopPropagation="true">✕</button>
+
                             <div class="movie-poster small">
                                 @if (recommendation.Movie.PosterUrl is not null)
                                 {
@@ -308,6 +319,17 @@
                         }
                     </div>
 
+                    <div class="modal-actions">
+                        @if (Library.SelectedTrailerKey is string trailerKey)
+                        {
+                            <a class="modal-action-btn" href="@($"https://www.youtube.com/watch?v={trailerKey}")" target="_blank" rel="noopener">@Loc.T("modal.trailer")</a>
+                        }
+
+                        <button type="button" class="modal-action-btn @(Library.IsInWatchlist(selectedMovie) ? "is-active" : string.Empty)" @onclick="() => Library.ToggleWatchlist(selectedMovie)">
+                            @(Library.IsInWatchlist(selectedMovie) ? Loc.T("modal.watchlist.remove") : Loc.T("modal.watchlist.add"))
+                        </button>
+                    </div>
+
                     <p class="detail-description">@selectedMovie.Overview</p>
 
                     <div class="detail-grid">
@@ -344,6 +366,80 @@
                             <p class="muted auth-hint"><a href="/account/login">@Loc.T("modal.loginPrefix")</a>@Loc.T("modal.loginSuffix")</p>
                         }
                     </div>
+
+                    @if (Library.SelectedWatchProviders is { HasAny: true } providers)
+                    {
+                        <div class="watch-providers">
+                            <span class="watch-providers-label">@Loc.T("modal.whereToWatch")</span>
+
+                            @if (providers.Flatrate.Count > 0)
+                            {
+                                <div class="watch-provider-group">
+                                    <span class="watch-provider-group-label">@Loc.T("modal.watch.stream")</span>
+                                    <div class="watch-provider-logos">
+                                        @foreach (var provider in providers.Flatrate)
+                                        {
+                                            @if (provider.LogoUrl is not null)
+                                            {
+                                                <img src="@provider.LogoUrl" alt="@provider.Name" title="@provider.Name" loading="lazy" />
+                                            }
+                                            else
+                                            {
+                                                <span class="watch-provider-chip">@provider.Name</span>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (providers.Rent.Count > 0)
+                            {
+                                <div class="watch-provider-group">
+                                    <span class="watch-provider-group-label">@Loc.T("modal.watch.rent")</span>
+                                    <div class="watch-provider-logos">
+                                        @foreach (var provider in providers.Rent)
+                                        {
+                                            @if (provider.LogoUrl is not null)
+                                            {
+                                                <img src="@provider.LogoUrl" alt="@provider.Name" title="@provider.Name" loading="lazy" />
+                                            }
+                                            else
+                                            {
+                                                <span class="watch-provider-chip">@provider.Name</span>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (providers.Buy.Count > 0)
+                            {
+                                <div class="watch-provider-group">
+                                    <span class="watch-provider-group-label">@Loc.T("modal.watch.buy")</span>
+                                    <div class="watch-provider-logos">
+                                        @foreach (var provider in providers.Buy)
+                                        {
+                                            @if (provider.LogoUrl is not null)
+                                            {
+                                                <img src="@provider.LogoUrl" alt="@provider.Name" title="@provider.Name" loading="lazy" />
+                                            }
+                                            else
+                                            {
+                                                <span class="watch-provider-chip">@provider.Name</span>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (providers.Link is not null)
+                            {
+                                <a class="watch-provider-link" href="@providers.Link" target="_blank" rel="noopener">@Loc.T("modal.watch.more")</a>
+                            }
+
+                            <p class="watch-provider-attribution">@Loc.T("modal.watch.attribution")</p>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

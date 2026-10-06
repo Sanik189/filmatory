@@ -1,5 +1,6 @@
 .profile-header,
 .profile-preferences,
+.profile-watchlist,
 .profile-history {
     max-width: 720px;
     margin: 0 auto 22px;
@@ -27,6 +28,21 @@
     color: var(--text-main);
     padding: 0.35rem 0.7rem;
     font-size: 0.82rem;
+}
+
+.type-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    white-space: nowrap;
+    background: var(--accent-soft);
+    color: #ffd9cb;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .back-link {
@@ -120,6 +136,65 @@
     font-size: 0.86rem;
 }
 
+.pref-section-divider {
+    height: 1px;
+    margin: 18px 0;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.provider-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.provider-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.provider-chip img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.provider-chip span {
+    padding: 0 4px;
+    font-size: 0.68rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.provider-chip.is-selected {
+    border-color: var(--accent);
+}
+
+.watchlist-remove-btn {
+    flex-shrink: 0;
+    align-self: center;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.watchlist-remove-btn:hover {
+    color: var(--danger);
+    border-color: rgba(255, 107, 107, 0.4);
+}
+
 .pref-save {
     margin-top: 18px;
     width: auto;
@@ -179,6 +254,7 @@
 @media (max-width: 640px) {
     .profile-header,
     .profile-preferences,
+    .profile-watchlist,
     .profile-history {
         padding: 20px;
     }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using POP.Components;
@@ -22,6 +23,10 @@ builder.Services.AddHttpClient<TmdbService>(client =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")))
+    .SetApplicationName("Filmatory");
+
 var connectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=pop.db";
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
 
@@ -44,6 +49,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<WatchHistoryStore>();
+builder.Services.AddScoped<WatchlistStore>();
 builder.Services.AddScoped<LocalizationState>();
 builder.Services.AddScoped<MovieLibraryState>();
 
